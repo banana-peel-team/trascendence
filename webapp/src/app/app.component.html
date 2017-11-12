@@ -1,12 +1,19 @@
-<!--The content below is only a placeholder and can be replaced.-->
-<div class="text-center">
-  <h1>
-    Welcome to {{title}}!
-  </h1>
-</div>
 <div class="container">
   <div class="row">
-    <div class="col-sm">
+    <h3 class="text-center">{{ fetchedGame?.name }}</h3>
+    <div class="col-sm" *ngFor="let player of fetchedGame?.players; let first = first">
+      <div *ngIf="first">
+        <div class="col-sm-8 text-center first">
+          <h3 class="player-name">{{ player.name }}</h3>
+          <h1 class="player-life">{{ player.life }}</h1>
+        </div>
+      </div>
+      <div *ngIf="!first">
+        <div class="col-sm-4">
+          <h4 class="player-name">{{ player.name }}</h4>
+          <h5 class="player-life">{{ player.life }}</h5>
+        </div>
+      </div>
     </div>
   </div>
 </div>
