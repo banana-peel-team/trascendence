@@ -17,19 +17,23 @@ import { Player } from '../models/player';
 export class AppComponent {
   title = 'Trascendence';
   game: Game;
+  player: Player;
   player1: Player;
   player2: Player;
   fetchedGame: Game;
+  gameId;
 
   createGameDev = false;
 
-  constructor(private firebaseService: FirebaseService, private af: AngularFireDatabase) {
+  constructor(private firebaseService: FirebaseService, 
+              private af: AngularFireDatabase) {
     var gameId = '-Kyh8vXyMLxY0FqNlINI';
 
     this.af.object('games/' + gameId).snapshotChanges().map(game => {
       const $key = game.payload.key;
       const data = { $key, ...game.payload.val() };
       this.fetchedGame = new Game(data.name, data.players);
+      this.gameId = data.$key;
     }).subscribe();
 
     if (this.createGameDev) {
@@ -40,6 +44,17 @@ export class AppComponent {
         console.log('User Added');
       });
     }
+  }
+
+  updateLife(index, difference) {
+    this.player = new Player(this.fetchedGame.players[index].name, 
+                             this.fetchedGame.players[index].life + difference);
+    this.firebaseService.updatePlayer(this.gameId, 
+                                      index, 
+                                      this.player).then(() => {
+    }).catch(() => {
+      console.log('Error: Player\'s life could not be updated');
+    });
   }
   
 }

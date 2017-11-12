@@ -17,4 +17,10 @@ export class FirebaseService {
       this.af.list('games').push(game);
     });
   }
+
+  updatePlayer(gameId, index, player: Player) {
+    return new Promise((resolve, reject) => {
+      this.af.object('games/' + gameId + '/players/' + index + '/').update(player);
+    });
+  }
 }
