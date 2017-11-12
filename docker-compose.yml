@@ -1,0 +1,17 @@
+version: '3.0'
+services:
+  web:
+    build:
+      context: webapp
+    working_dir: "/home/node/app"
+    user: "node"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./webapp:/home/node/app
+      - npm_modules:/home/node/.npm
+    ports:
+      - "4200:4200"
+    command: "npm start"
+volumes:
+  npm_modules:
