@@ -20,26 +20,34 @@ export class AppComponent {
   player: Player;
   player1: Player;
   player2: Player;
+  player3: Player;
   fetchedGame: Game;
   gameId;
+  currentMainPlayerIndex = 0;
 
   createGameDev = false;
 
   constructor(private firebaseService: FirebaseService, 
               private af: AngularFireDatabase) {
-    var gameId = '-Kyh8vXyMLxY0FqNlINI';
+    var gameId = '-Kyn9HofQVqaBM7mAiAj';
 
     this.af.object('games/' + gameId).snapshotChanges().map(game => {
       const $key = game.payload.key;
       const data = { $key, ...game.payload.val() };
       this.fetchedGame = new Game(data.name, data.players);
+      this.fetchedGame.players.forEach((player, index) => {
+        if (index==this.currentMainPlayerIndex) {
+          player.main = true;
+        }
+      });
       this.gameId = data.$key;
     }).subscribe();
 
     if (this.createGameDev) {
       this.player1 = new Player('Diego', 20);
       this.player2 = new Player('Gonzalo', 20);
-      this.game = new Game('First game', [this.player1, this.player2]);
+      this.player3 = new Player('Bruno', 20);
+      this.game = new Game('First game', [this.player1, this.player2, this.player3]);
       this.firebaseService.createGame(this.game).then(() => {
         console.log('User Added');
       });
@@ -54,6 +62,18 @@ export class AppComponent {
                                       this.player).then(() => {
     }).catch(() => {
       console.log('Error: Player\'s life could not be updated');
+    });
+  }
+
+  makeMainPlayer(index) {
+    this.fetchedGame.players.forEach((player, i) => {
+      if (player.main == true) {
+        player.main = false;
+      }
+      if (i == index) {
+        player.main = true;
+        this.currentMainPlayerIndex = index;
+      }
     });
   }
   
