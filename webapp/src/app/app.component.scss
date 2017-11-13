@@ -1,4 +1,6 @@
-.first {
+.main-player {
+  float: left;
+
   .player-name {
     color: #C36A3F;
     font-family: 'Merriweather', serif;
@@ -12,5 +14,10 @@
   }
 }
 
-.player-name { font-family: 'Merriweather', serif; }
-.player-life { font-family: 'Vollkorn SC', serif; }
+.secondary-player-container {
+  float: right;
+  height: 100%;
+
+  .player-name { font-family: 'Merriweather', serif; }
+  .player-life { font-family: 'Vollkorn SC', serif; }
+}
