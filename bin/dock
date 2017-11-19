@@ -1,10 +1,25 @@
 #!/usr/bin/env bash
 
+run() {
+  docker-compose run --rm $@
+}
+
+__setup-ready() {
+  echo "Ready."
+  echo "Start the server with:"
+  echo "  docker-compose up"
+}
+
 setup() {
   docker-compose build &&
-    docker-compose run --rm -e NODE_ENV=development web npm install &&
-    docker-compose run --rm web npm install -g '@angular/cli' &&
-    docker-compose up
+    run -e NODE_ENV=development web npm install &&
+    run web npm install -g '@angular/cli' &&
+    run --no-deps api bundle install &&
+    docker-compose start db &&
+    docker-compose exec db createdb -U trans transcendence &&
+    docker-compose exec db createdb -U trans transcendence-test &&
+    docker-compose stop db &&
+    __setup-ready
 }
 
 $@

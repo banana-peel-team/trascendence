@@ -1,0 +1,5 @@
+version: '3.0'
+services:
+  api:
+    environment:
+      DATABASE_URL: "postgres://trans:trans@db:5432/transcendence-test"
