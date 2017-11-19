@@ -13,5 +13,35 @@ services:
     ports:
       - "4200:4200"
     command: "npm start"
+    networks:
+      - web
+  api:
+    image: ruby:2.4.1
+    command: shotgun -p 3000 -o 0.0.0.0
+    entrypoint: bundle exec
+    working_dir: "/app"
+    volumes:
+      - ./api:/app
+      - gems:/gems
+    environment:
+      BUNDLE_PATH: "/gems"
+      DATABASE_URL: "postgres://trans:trans@db:5432/transcendence"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    networks:
+      - database
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: trans
+      POSTGRES_PASSWORD: trans
+    networks:
+      - database
+networks:
+  database:
+  web:
 volumes:
   npm_modules:
+  gems:
