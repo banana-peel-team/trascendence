@@ -2,24 +2,28 @@ module Routes
   module V1
     class Games < Cuba
       define do
+        require_login!
+
         on post, root do
-          res.status = 201
-          render_json({
-            game: {
-              _id: "game-id",
-              name: 'test'
-            }
-          })
+          result = Services::Games::Create.perform(current_user, json_params)
+
+          if result
+            render_json(Presenters::Game.details(result))
+          else
+            render_errors(result)
+          end
         end
 
         on 'current' do
           on root do
-            render_json({
-              game: {
-                _id: "game-id",
-                name: 'test'
-              }
-            })
+            service = Services::Games::Current.perform(current_user)
+
+            if (game = service.perform)
+              render_json(Presenters::Game.details(game))
+            else
+              # service.errors
+              not_found
+            end
           end
 
           on 'players' do
