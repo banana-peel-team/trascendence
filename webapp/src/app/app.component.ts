@@ -7,6 +7,7 @@ import { AngularFireDatabase, AngularFireObject } from 'angularfire2/database';
 import { Observable } from 'rxjs/Observable';
 import { Game } from '../models/game';
 import { Player } from '../models/player';
+import { clearInterval, clearTimeout } from 'timers';
 
 @Component({
   selector: 'app-root',
@@ -24,6 +25,9 @@ export class AppComponent {
   fetchedGame: Game;
   gameId;
   currentMainPlayerIndex = 0;
+  timeoutHandler;
+
+  playersWithUpdatedLife = [];
 
   createGameDev = false;
 
@@ -54,6 +58,23 @@ export class AppComponent {
     }
   }
 
+  showCounter(index, difference) {
+    if (this.playersWithUpdatedLife[index]==undefined) {
+      this.playersWithUpdatedLife[index] = difference;
+    } else {
+      this.playersWithUpdatedLife[index] = this.playersWithUpdatedLife[index] + difference;
+    }
+    if (this.timeoutHandler) {
+      clearTimeout(this.timeoutHandler);
+    }
+    this.timeoutHandler = setTimeout(()=>{
+      if (this.fetchedGame.players[index].life + difference == this.playersWithUpdatedLife[index]) {
+        this.updateLife (index, difference)
+        this.playersWithUpdatedLife[index] = undefined;
+      }
+    }, 1500);
+  }
+
   updateLife(index, difference) {
     this.player = new Player(this.fetchedGame.players[index].name, 
                              this.fetchedGame.players[index].life + difference);
@@ -78,3 +99,12 @@ export class AppComponent {
   }
   
 }
+
+/**
+ * User clicks and I compare beggining life with difference AND UPDATE ANOTHER VARIABLE CALLED CURRENT_UPDATED_LIFE
+ * Start timer 
+ * if the difference between current-life +/- differente = CURRENT_UPDATED_LIFE
+ *   UPDATE
+ * else
+ *   Don't do anything
+ */
