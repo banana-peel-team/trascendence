@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-
 import { AngularFireAuth } from 'angularfire2/auth';
 import * as firebase from 'firebase/app';
 import { FirebaseService } from './providers/firebase-database.service';
@@ -24,6 +23,9 @@ export class AppComponent {
   fetchedGame: Game;
   gameId;
   currentMainPlayerIndex = 0;
+  timeoutHandler;
+
+  playersWithUpdatedLife = [];
 
   createGameDev = false;
 
@@ -54,14 +56,34 @@ export class AppComponent {
     }
   }
 
+  showCounter(index, difference) {
+    if (this.playersWithUpdatedLife[index] == undefined) {
+      this.playersWithUpdatedLife[index] = difference;
+    } else {
+      this.playersWithUpdatedLife[index] += difference;
+    }
+    if (this.timeoutHandler != undefined) {
+      clearTimeout(this.timeoutHandler);
+    }
+    this.timeoutHandler = setTimeout(()=>{
+      this.updateLife(index, this.playersWithUpdatedLife[index]).then(() => {
+        this.playersWithUpdatedLife[index] = undefined;
+      }).catch(() => {
+        this.playersWithUpdatedLife[index] = undefined;
+      });
+    }, 500);
+  }
+
   updateLife(index, difference) {
-    this.player = new Player(this.fetchedGame.players[index].name, 
-                             this.fetchedGame.players[index].life + difference);
-    this.firebaseService.updatePlayer(this.gameId, 
-                                      index, 
-                                      this.player).then(() => {
-    }).catch(() => {
-      console.log('Error: Player\'s life could not be updated');
+    return new Promise((resolve, reject) => {
+      this.player = new Player(this.fetchedGame.players[index].name, 
+                               this.fetchedGame.players[index].life + difference);
+      this.firebaseService.updatePlayer(this.gameId, index, this.player).then(() => {
+        resolve();
+      }).catch(() => {
+        console.log('Error: Player\'s life could not be updated');
+        reject();
+      });
     });
   }
 
