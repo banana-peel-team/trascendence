@@ -21,6 +21,7 @@ export class FirebaseService {
   updatePlayer(gameId, index, player: Player) {
     return new Promise((resolve, reject) => {
       this.af.object('games/' + gameId + '/players/' + index + '/').update(player);
+      resolve();
     });
   }
 }

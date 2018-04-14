@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-
 import { AngularFireAuth } from 'angularfire2/auth';
 import * as firebase from 'firebase/app';
 import { FirebaseService } from './providers/firebase-database.service';
@@ -7,7 +6,6 @@ import { AngularFireDatabase, AngularFireObject } from 'angularfire2/database';
 import { Observable } from 'rxjs/Observable';
 import { Game } from '../models/game';
 import { Player } from '../models/player';
-import { clearInterval, clearTimeout } from 'timers';
 
 @Component({
   selector: 'app-root',
@@ -59,30 +57,33 @@ export class AppComponent {
   }
 
   showCounter(index, difference) {
-    if (this.playersWithUpdatedLife[index]==undefined) {
+    if (this.playersWithUpdatedLife[index] == undefined) {
       this.playersWithUpdatedLife[index] = difference;
     } else {
-      this.playersWithUpdatedLife[index] = this.playersWithUpdatedLife[index] + difference;
+      this.playersWithUpdatedLife[index] += difference;
     }
-    if (this.timeoutHandler) {
+    if (this.timeoutHandler != undefined) {
       clearTimeout(this.timeoutHandler);
     }
     this.timeoutHandler = setTimeout(()=>{
-      if (this.fetchedGame.players[index].life + difference == this.playersWithUpdatedLife[index]) {
-        this.updateLife (index, difference)
+      this.updateLife(index, this.playersWithUpdatedLife[index]).then(() => {
         this.playersWithUpdatedLife[index] = undefined;
-      }
-    }, 1500);
+      }).catch(() => {
+        this.playersWithUpdatedLife[index] = undefined;
+      });
+    }, 500);
   }
 
   updateLife(index, difference) {
-    this.player = new Player(this.fetchedGame.players[index].name, 
-                             this.fetchedGame.players[index].life + difference);
-    this.firebaseService.updatePlayer(this.gameId, 
-                                      index, 
-                                      this.player).then(() => {
-    }).catch(() => {
-      console.log('Error: Player\'s life could not be updated');
+    return new Promise((resolve, reject) => {
+      this.player = new Player(this.fetchedGame.players[index].name, 
+                               this.fetchedGame.players[index].life + difference);
+      this.firebaseService.updatePlayer(this.gameId, index, this.player).then(() => {
+        resolve();
+      }).catch(() => {
+        console.log('Error: Player\'s life could not be updated');
+        reject();
+      });
     });
   }
 
@@ -99,12 +100,3 @@ export class AppComponent {
   }
   
 }
-
-/**
- * User clicks and I compare beggining life with difference AND UPDATE ANOTHER VARIABLE CALLED CURRENT_UPDATED_LIFE
- * Start timer 
- * if the difference between current-life +/- differente = CURRENT_UPDATED_LIFE
- *   UPDATE
- * else
- *   Don't do anything
- */
