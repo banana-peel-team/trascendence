@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+
+__migrate() {
+  sequel -m db/migrations $@ $DATABASE_URL
+}
+
+migrate() {
+  docker-compose run --rm \
+    api \
+    bin/util __migrate $@
+}
+
+migrate-test() {
+  docker-compose -f docker-compose.yml -f docker-compose.test.yml \
+    run --rm api \
+    bin/util __migrate $@
+}
+
+rspec() {
+  docker-compose -f docker-compose.yml -f docker-compose.test.yml \
+    run --rm api \
+    rspec $@
+}
+
+generate-migration() {
+  if [ $UID -eq 0 ]; then
+    echo "Please don't run this as root." >&2
+    exit 1
+  fi
+
+  if [ $# -lt 1 ]; then
+    echo " Use $0 generate-migration <migration_name>" >&2
+    exit 2
+  fi
+
+  TIME=$(date +'%Y%m%d%H%M%S')
+  FILE_PATH="db/migrations/${TIME}_${1}.rb"
+
+  EXISTING=$(ls db/migrations/*_$1.rb 2>/dev/null)
+
+  if [ $? -eq 0 ]; then
+    echo " Migration name already in use:" >&2
+
+    for I in $EXISTING; do
+      echo "   >>> $I" >&2
+    done
+
+    exit 3
+  fi
+
+  echo " >> Creating: $FILE_PATH"
+
+  cat > $FILE_PATH <<EOF
+Sequel.migration do
+  up do
+  end
+
+  down do
+  end
+end
+EOF
+}
+
+
+help() {
+  echo "Use $0 <command> [options]"
+  echo ""
+  echo " -> Commands:"
+  echo "     generate-migration <migration_name>"
+  echo "       Generate a migration"
+  echo "     migrate"
+  echo "       (uses .env)"
+  echo "       Run database migrations"
+  echo "     migrate-test"
+  echo "       (uses .env.test)"
+  echo "       Migrate database"
+  echo "     spec [file]"
+  echo "       (uses .env.test)"
+  echo "        Run specs"
+  echo "     env <env-file> <command> [options]"
+  echo "        Run command within custom environment"
+}
+
+if [ -z $1 ]; then
+  help
+else
+  $@
+fi

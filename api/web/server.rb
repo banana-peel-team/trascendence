@@ -2,8 +2,10 @@ require 'cuba'
 
 require './app/application'
 
+require_relative 'helpers/login_helper'
 require_relative 'helpers/common_helper'
 
+Cuba.plugin(Helpers::LoginHelper)
 Cuba.plugin(Helpers::CommonHelper)
 
 require_relative 'routes/v1/users'

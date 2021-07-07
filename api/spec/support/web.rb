@@ -11,5 +11,9 @@ module Support
     def json_request(options = {})
       options.merge('CONTENT_TYPE' => 'application/json')
     end
+
+    def auth(user, options = {})
+      options.merge('HTTP_USER_ID' => user.username)
+    end
   end
 end
